@@ -1,10 +1,11 @@
 // Directivas de preprocesador
 
-#define INFPIN     2 // pin de salida inferior en la placa
-#define SUPPIN    12 // pin de salida superior en la placa
+#define INFPIN     3 // pin de salida inferior en la placa
+#define SUPPIN    13 // pin de salida superior en la placa
 #define CANT      SUPPIN-INFPIN+1 // cantidad de pines
 #define DELAY     15
-#define LUCKYPIN   7 // indica el pin objetivo
+#define LUCKYPIN   8 // indica el pin objetivo
+#define BUTTON     2
 
 // Estructuras
 
@@ -15,6 +16,7 @@ struct Juego {
 // Prototipos de funciones
 
 void recorrerLeds(int[], int, int); 
+boolean debounceButton (boolean);
 
 void setup()
 {
@@ -28,6 +30,9 @@ void setup()
     pinMode(pin, OUTPUT);
     juego.ledPins[index] = pin;
   }
+
+  // especificando el buton
+  pinMode(BUTTON, INPUT);
 }
 
 void loop()
@@ -60,4 +65,22 @@ void recorrerLeds(int leds[], int n, int tDelay)
     digitalWrite(leds[index], LOW);
     delay(tDelay);
   }
+}
+
+/*
+  Funcion    : debounceButton
+  Argumentos : boolean state
+  Objetivo   : filtrar el ruido en el boton
+  Retorno    : (boolean) stateNow
+*/
+boolean debounceButton (boolean state) 
+{
+  boolean stateNow = digitalRead(BUTTON);
+  if (state != stateNow)
+  {
+    delay(10);
+    stateNow = digitalRead(BUTTON);
+  }
+
+  return stateNow;
 }
