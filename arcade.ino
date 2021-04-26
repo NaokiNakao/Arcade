@@ -1,52 +1,48 @@
-// Directivas de preprocesador
+/* Directivas de preprocesador */
+#define INFPIN    3
+#define SUPPIN   13
+#define CANT     SUPPIN-INFPIN+1
+#define DELAY    15
+#define THEPIN    8
 
-#define INFPIN     3 // pin de salida inferior en la placa
-#define SUPPIN    13 // pin de salida superior en la placa
-#define CANT      SUPPIN-INFPIN+1 // cantidad de pines
-#define DELAY     15
-#define LUCKYPIN   8 // indica el pin objetivo
-#define BUTTON     2
+/* Variables globales */
+byte ledPins[CANT];
+const byte buttonPin = 2;
+volatile byte currentPosition = 0;
 
-// Estructuras
+/* Prototipos de funcion */
 
-struct Juego {
-  int ledPins[CANT], cantPins, tDelay;
-}juego;
-
-// Prototipos de funciones
-
-void recorrerLeds(int[], int, int); 
-boolean debounceButton (boolean);
+void recorrerLeds(byte[], int, int);
+void checkPosition();
 
 void setup()
 {
-  // iniciando los datos del juego
-  juego.cantPins = CANT;
-  juego.tDelay = DELAY;
-  
-  // estableciendo y asignando los pines de salida 
+  // estableciendo los pines de salida
   for (int pin = INFPIN, index = 0; pin <= SUPPIN; pin++, index++)
   {
     pinMode(pin, OUTPUT);
-    juego.ledPins[index] = pin;
+    ledPins[index] = pin;
   }
 
-  // especificando el buton
-  pinMode(BUTTON, INPUT);
+  // estableciendo el pin boton
+  pinMode(buttonPin, INPUT_PULLUP);
 }
 
 void loop()
 {
-  recorrerLeds(juego.ledPins, juego.cantPins, juego.tDelay);
+  // interrupcion de hardware
+  attachInterrupt(digitalPinToInterrupt(buttonPin), checkPosition, RISING);
+  
+  recorrerLeds(ledPins, CANT, DELAY);
 }
 
 /*
   Funcion    : recorrerLeds
-  Argumentos : int leds[], int n, int tDelay
-  Objetivo   : recorrer el arreglo de leds
+  Argumentos : byte leds[], int n, int tDelay
+  Objetivo   : recorrer un arreglo de led
   Retorno    : ---
 */
-void recorrerLeds(int leds[], int n, int tDelay)
+void recorrerLeds(byte leds[], int n, int tDelay)
 {
   int index;
 
@@ -56,6 +52,8 @@ void recorrerLeds(int leds[], int n, int tDelay)
     delay(tDelay);
     digitalWrite(leds[index], LOW);
     delay(tDelay);
+    
+    currentPosition++;
   }
 
   for (index = n-1; index >= 0; index--)
@@ -64,23 +62,18 @@ void recorrerLeds(int leds[], int n, int tDelay)
     delay(tDelay);
     digitalWrite(leds[index], LOW);
     delay(tDelay);
+
+    currentPosition--;
   }
 }
 
 /*
-  Funcion    : debounceButton
-  Argumentos : boolean state
-  Objetivo   : filtrar el ruido en el boton
-  Retorno    : (boolean) stateNow
+  Funcion    : checkPosition
+  Argumentos : ---
+  Objetivo   : ISR activada al presionar el boton
+  Retorno    : ---
 */
-boolean debounceButton (boolean state) 
+void checkPosition()
 {
-  boolean stateNow = digitalRead(BUTTON);
-  if (state != stateNow)
-  {
-    delay(10);
-    stateNow = digitalRead(BUTTON);
-  }
-
-  return stateNow;
+  
 }
